@@ -80,7 +80,7 @@ describe("HMAC peer authentication", () => {
     const fromWarren = "alpha";
     const sourceLootId = "abc";
     const body = "hello";
-    const goodSig = signMessage(sourceLootId, "pigeon", body, fromWarren, secret);
+    const goodSig = signMessage(sourceLootId, "glowworm", body, fromWarren, secret);
     const goodMsg: InboxMessage = {
       id: "m1",
       fromWarren,
@@ -99,7 +99,7 @@ describe("HMAC peer authentication", () => {
     // With a local secret but no HMAC tag at all, the receiver rejects.
     const noTagMsg: InboxMessage = {
       ...goodMsg,
-      signature: signMessage(sourceLootId, "pigeon", body, fromWarren),
+      signature: signMessage(sourceLootId, "glowworm", body, fromWarren),
     };
     assert.equal(verifyInbox(noTagMsg, secret), false);
   });

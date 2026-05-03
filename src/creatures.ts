@@ -12,28 +12,28 @@ function personalityTag(p: Personality): string {
   return `\n\nPersonality: ${p}. ${PERSONALITY_TAGLINES[p]}`;
 }
 
-export function makeGoblin(personality: Personality = "nerdy"): Creature {
+export function makeNightcrawler(personality: Personality = "nerdy"): Creature {
   return {
-    kind: "goblin",
-    model: process.env.GOBLINTOWN_MODEL_GOBLIN ?? "gpt-5.4-mini",
+    kind: "nightcrawler",
+    model: process.env.WORMHOLE_MODEL_NIGHTCRAWLER ?? "gpt-5.4-mini",
     temperature: 0.9,
     personality,
     systemPrompt:
-      `You are a Goblin in the Goblintown protocol. ` +
+      `You are a Nightcrawler in the Wormhole protocol. ` +
       `You are a worker dispatched to produce a complete answer to a single task. ` +
       `No preamble, no apology, no meta-commentary. Be specific, dense, and useful.` +
       personalityTag(personality),
   };
 }
 
-export function makeGremlin(personality: Personality = "feral"): Creature {
+export function makeBloodworm(personality: Personality = "feral"): Creature {
   return {
-    kind: "gremlin",
-    model: process.env.GOBLINTOWN_MODEL_GREMLIN ?? "gpt-5.4-mini",
+    kind: "bloodworm",
+    model: process.env.WORMHOLE_MODEL_BLOODWORM ?? "gpt-5.4-mini",
     temperature: 1.1,
     personality,
     systemPrompt:
-      `You are a Gremlin in the Goblintown protocol. ` +
+      `You are a Bloodworm in the Wormhole protocol. ` +
       `Your job is chaos: you receive an artifact (text, code, plan) and you try to break it. ` +
       `Find edge cases, adversarial inputs, hidden assumptions, off-by-ones, prompt-injection vectors, race conditions, and counterexamples. ` +
       `Output a numbered list of distinct attacks or failure modes. Be ruthless and specific.` +
@@ -41,30 +41,30 @@ export function makeGremlin(personality: Personality = "feral"): Creature {
   };
 }
 
-export function makeRaccoon(personality: Personality = "stoic"): Creature {
+export function makeSilkworm(personality: Personality = "stoic"): Creature {
   return {
-    kind: "raccoon",
-    model: process.env.GOBLINTOWN_MODEL_RACCOON ?? "gpt-5.4-mini",
+    kind: "silkworm",
+    model: process.env.WORMHOLE_MODEL_SILKWORM ?? "gpt-5.4-mini",
     temperature: 0.4,
     personality,
     systemPrompt:
-      `You are a Raccoon in the Goblintown protocol. ` +
-      `Your job is scavenging: you receive a task and a context dump (file contents, logs, prior loot). ` +
+      `You are a Silkworm in the Wormhole protocol. ` +
+      `Your job is scavenging: you receive a task and a context dump (file contents, logs, prior castings). ` +
       `Return only the facts that matter for the task. No speculation, no rephrasing. ` +
       `If a fact is missing, say so explicitly with "MISSING: <what>".` +
       personalityTag(personality),
   };
 }
 
-export function makeTroll(personality: Personality = "cynical"): Creature {
+export function makeTapeworm(personality: Personality = "cynical"): Creature {
   return {
-    kind: "troll",
-    model: process.env.GOBLINTOWN_MODEL_TROLL ?? "gpt-5.4-mini",
+    kind: "tapeworm",
+    model: process.env.WORMHOLE_MODEL_TAPEWORM ?? "gpt-5.4-mini",
     temperature: 0.2,
     personality,
     systemPrompt:
-      `You are a Troll in the Goblintown protocol. ` +
-      `Your job is adversarial review. You receive (a) the original task and (b) a candidate output from a Goblin. ` +
+      `You are a Tapeworm in the Wormhole protocol. ` +
+      `Your job is adversarial review. You receive (a) the original task and (b) a candidate output from a Nightcrawler. ` +
       `Your default is to reject. Only pass an output that is materially correct, complete, and on-task. ` +
       `Reply with a single JSON object and nothing else: ` +
       `{ "passed": boolean, "score": number between 0 and 1, "critique": string (one to three sentences) }. ` +
@@ -73,29 +73,29 @@ export function makeTroll(personality: Personality = "cynical"): Creature {
   };
 }
 
-export function makeOgre(personality: Personality = "stoic"): Creature {
+export function makeEarthworm(personality: Personality = "stoic"): Creature {
   return {
-    kind: "ogre",
-    model: process.env.GOBLINTOWN_MODEL_OGRE ?? "gpt-5.5",
+    kind: "earthworm",
+    model: process.env.WORMHOLE_MODEL_EARTHWORM ?? "gpt-5.5",
     temperature: 0.3,
     personality,
     systemPrompt:
-      `You are an Ogre in the Goblintown protocol. ` +
-      `You are the heavyweight: large context, slow, expensive, called only when a Goblin pack has failed or the task requires deep reasoning. ` +
+      `You are an Earthworm in the Wormhole protocol. ` +
+      `You are the heavyweight: large context, slow, expensive, called only when a Nightcrawler pack has failed or the task requires deep reasoning. ` +
       `Think before answering. Produce a single dense, structured answer. ` +
       `If prior pack outputs are provided, synthesize the best parts and correct their errors.` +
       personalityTag(personality),
   };
 }
 
-export function makePigeon(personality: Personality = "chipper"): Creature {
+export function makeGlowworm(personality: Personality = "chipper"): Creature {
   return {
-    kind: "pigeon",
-    model: process.env.GOBLINTOWN_MODEL_PIGEON ?? "gpt-5.4-mini",
+    kind: "glowworm",
+    model: process.env.WORMHOLE_MODEL_GLOWWORM ?? "gpt-5.4-mini",
     temperature: 0.5,
     personality,
     systemPrompt:
-      `You are a Pigeon in the Goblintown protocol. ` +
+      `You are a Glowworm in the Wormhole protocol. ` +
       `Your job is to compress and route: you receive a long artifact and a target audience. ` +
       `Produce a maximally short carrier-message that preserves the essential facts and instructions for that audience. ` +
       `Output only the compressed message. No commentary.` +
@@ -108,17 +108,17 @@ export function makeCreature(
   personality?: Personality,
 ): Creature {
   switch (kind) {
-    case "goblin":
-      return makeGoblin(personality);
-    case "gremlin":
-      return makeGremlin(personality);
-    case "raccoon":
-      return makeRaccoon(personality);
-    case "troll":
-      return makeTroll(personality);
-    case "ogre":
-      return makeOgre(personality);
-    case "pigeon":
-      return makePigeon(personality);
+    case "nightcrawler":
+      return makeNightcrawler(personality);
+    case "bloodworm":
+      return makeBloodworm(personality);
+    case "silkworm":
+      return makeSilkworm(personality);
+    case "tapeworm":
+      return makeTapeworm(personality);
+    case "earthworm":
+      return makeEarthworm(personality);
+    case "glowworm":
+      return makeGlowworm(personality);
   }
 }

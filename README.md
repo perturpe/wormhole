@@ -1,278 +1,169 @@
-# Goblintown
+# Wormhole
 
-A multi-agent orchestration protocol on top of OpenAI. Goblintown turns "ask
-the model" into a small fleet of specialized agents that scavenge context,
-race against each other on the same task, attack each other's outputs, and
-hand the surviving answer back as a signed, content-addressed artifact.
+Worm-powered multi-agent orchestration on top of OpenAI. Instead of a single model call, Wormhole dispatches a pack of specialized worms that compete, attack, and review each other's outputs — then hands back the surviving answer as a content-addressed artifact.
 
-## Background
-
-In April 2026, OpenAI published [*Where the goblins came from*](https://openai.com/index/where-the-goblins-came-from/),
-explaining how a reward signal trained for a "Nerdy" personality leaked
-across all of GPT-5.5's outputs and produced a noticeable surge in creature
-metaphors. Codex shipped with a hardcoded ban list — *goblins, gremlins,
-raccoons, trolls, ogres, pigeons*.
-
-This project takes that ban list as a roster.
+```
+   ∿∿∿∿∿∿∿∿∿∿∿∿
+  ( ○          ○ )>
+   ~~~~~~~~~~~~
+```
 
 ## Roster
 
-| Creature | Job |
-| --- | --- |
-| **Goblin** | Worker. Cheap, high-temperature, dispatched in packs. |
-| **Gremlin** | Adversarial. Tries to break a candidate output. |
-| **Raccoon** | Scavenger. Returns only the facts a task actually needs. |
-| **Troll** | Reviewer. Default-rejects. Returns a JSON verdict. |
-| **Ogre** | Heavyweight. Deep reasoning, called when the pack fails. |
-| **Pigeon** | Carrier. Compresses and routes artifacts between Warrens. |
+| Worm | Role |
+|---|---|
+| **Nightcrawler** | Worker. Cheap, high-temperature, dispatched in packs. |
+| **Bloodworm** | Adversarial. Tries to break every candidate output. |
+| **Silkworm** | Scavenger. Returns only the facts a task actually needs. |
+| **Tapeworm** | Reviewer. Default-rejects. Returns a JSON verdict. |
+| **Earthworm** | Heavyweight. Deep reasoning, called when the pack fails. |
+| **Glowworm** | Carrier. Compresses and routes castings between Burrows. |
 
-A unit test pins the roster to the OpenAI ban list, so it can't drift quietly.
-
-## Bestiary
-
-<table>
-<tr>
-<td valign="top" align="center">
+## Pipeline (the Tunnel)
 
 ```
-   ▄█▄        ▄█▄
-   ███        ███
-    ▀████████████▀
-     █  ▀▄  ▄▀  █
-     █   ●  ●   █
-     █    ▾▾    █
-     █▄▄▄▄▄▄▄▄▄▄█
-      █▌ █  █ ▐█
-      ▀▀ ▀  ▀ ▀▀
+  ┌──────────┐  facts  ┌─────────────┐  N parallel  ┌──────────────┐
+  │ Silkworm │────────▶│ Nightcrawler│═════════════▶│ Nightcrawlers│
+  │ (optional│         │   pack      │              │   output     │
+  │  scan)   │         └─────────────┘              └──────┬───────┘
+  └──────────┘                                             │
+                                                           ▼
+                                                  ┌─────────────────┐
+                                                  │   Bloodworm     │
+                                                  │   chaos pass    │
+                                                  └────────┬────────┘
+                                                           ▼
+                                                  ┌─────────────────┐
+                                                  │    Tapeworm     │
+                                                  │     review      │
+                                                  └────────┬────────┘
+                                                           │
+                                               any pass ───┴─── all fail
+                                                   │               │
+                                                   ▼               ▼
+                                            ┌──────────┐   ┌───────────┐
+                                            │  winner  │   │ Earthworm │
+                                            │ castings │   │ fallback  │
+                                            └──────────┘   └───────────┘
 ```
 
-**Goblin**
-</td>
-<td valign="top" align="center">
-
-```
-   ▀▄ ▄▀ ▀▄ ▄▀
-     ▀█▄▄█▄▄█▀
-      █████████
-      █ ◉   ◉ █
-      █   ╳   █
-      █ ╲╱╲╱╲ █
-       ▀█████▀
-         █ █
-        ▀▀ ▀▀
-```
-
-**Gremlin**
-</td>
-<td valign="top" align="center">
-
-```
-    ▄█▄          ▄█▄
-    ███          ███
-     ▀████████████▀
-     █▌ ●▔     ▔● ▐█
-     █      ▾      █
-     █▄▄▄▄▄▄▄▄▄▄▄▄█
-     █▌█        █▐█
-     ▀▀▀        ▀▀▀
-```
-
-**Raccoon**
-</td>
-</tr>
-<tr>
-<td valign="top" align="center">
-
-```
-       ▄ ▄    ▄ ▄
-       █ █    █ █
-     ▄████████████▄
-     █  ●        ●  █
-     █     ▾▾▾▾    █
-     █  ──────────  █
-     ████████████████
-    █▌                ▐█
-    █▌                ▐█
-    ████          ████
-```
-
-**Troll**
-</td>
-<td valign="top" align="center">
-
-```
-        ▄▄▄▄▄▄▄▄▄▄
-       ████████████
-      ██  ▀▀    ▀▀  ██
-      █     ●    ●    █
-      █        ▽       █
-      █▄  ▼▼▼▼▼▼▼▼  ▄█
-       ████████████
-      ██████████████
-      ██          ██
-      ██          ██
-```
-
-**Ogre**
-</td>
-<td valign="top" align="center">
-
-```
-       ▄██▄
-      ██  ●█
-      █▌    █▶▶▶
-      ██████████
-      █▀▀▀▀▀▀▀▀█
-       ████████
-          █ █
-          █ █
-         ▀▀ ▀▀
-```
-
-**Pigeon**
-</td>
-</tr>
-</table>
-
-`goblintown summon <kind>` prints the banner before each invocation. Suppress with `GOBLINTOWN_NO_BANNER=1`.
-
-## Pipeline (the Rite)
-
-```
-  ┌──────────┐   facts   ┌────────────┐  N parallel  ┌──────────┐
-  │ Raccoon  │──────────▶│  Goblin    │═════════════▶│ Goblins  │
-  │ (optional│           │  pack      │              │  output  │
-  │  scan)   │           └────────────┘              └────┬─────┘
-  └──────────┘                                            │
-                                                          ▼
-                                                  ┌─────────────┐
-                                                  │   Gremlin   │
-                                                  │ chaos pass  │
-                                                  └──────┬──────┘
-                                                         ▼
-                                                  ┌─────────────┐
-                                                  │    Troll    │
-                                                  │   review    │
-                                                  └──────┬──────┘
-                                                         │
-                                              any pass ──┴── all fail
-                                                  │             │
-                                                  ▼             ▼
-                                            ┌────────┐    ┌──────────┐
-                                            │ winner │    │   Ogre   │
-                                            │  loot  │    │ fallback │
-                                            └────────┘    └──────────┘
-```
-
-Every step writes a Loot drop to the Hoard with parent links to its inputs.
-A Rite is fully reconstructible from the Hoard alone.
+Every step writes castings to the Burrow with parent links to its inputs. A Tunnel is fully reconstructible from the Burrow alone.
 
 ## Concepts
 
-- **Loot** — one agent invocation, content-addressed by `sha256(model || prompt || output)`.
-- **Quest** — lightweight: Goblin pack + Troll arbitration.
-- **Rite** — full pipeline: Raccoon → pack → Gremlin → Troll → Ogre fallback.
-- **Hoard** — file-backed store under `.goblintown/hoard/`.
-- **Warren** — per-project root, found by walking up from cwd.
-- **Shinies** — reward signal: troll score − cross-creature drift penalty + pass bonus, clamped 0..1.
-- **Drift** — cross-creature word frequency. A Goblin output mentioning *raccoons* unprompted is the signal we measure.
+- **Castings** — one worm invocation, content-addressed by `sha256(model || prompt || output)`.
+- **Dig** — lightweight: Nightcrawler pack + Tapeworm arbitration.
+- **Tunnel** — full pipeline: Silkworm → pack → Bloodworm → Tapeworm → Earthworm fallback.
+- **Dirt** — file-backed store under `.wormhole/dirt/`.
+- **Burrow** — per-project root, found by walking up from cwd.
+- **Castings score** — reward signal: tapeworm score − cross-worm drift penalty + pass bonus, clamped 0..1.
+- **Drift** — cross-worm word frequency. A Nightcrawler output mentioning *tapeworms* unprompted is the signal we measure.
 
 ## Install
 
 ```bash
+git clone https://github.com/perturpe/wormhole.git
+cd wormhole
 npm install
 npm run build
 ```
 
-`OPENAI_API_KEY` must be set for any command that calls a creature.
+Requires Node.js 20+ and an OpenAI API key.
+
+## Setup
+
+```bash
+export OPENAI_API_KEY=sk-your-key-here
+node dist/cli.js init
+```
 
 ## Usage
 
 ```bash
-goblintown init
+# Single worm — output streams as it arrives
+node dist/cli.js wriggle silkworm --task "Summarize package.json"
+node dist/cli.js wriggle bloodworm --task "Attack this regex: /^\d+$/"
 
-# one-shots — output streams as it arrives
-goblintown summon raccoon --task "Summarize package.json" --personality stoic
-goblintown summon gremlin --task "Attack this regex: /^\d+$/"
+# Scavenge context from files
+node dist/cli.js scavenge --task "What does the build system do?" \
+  --scan "package.json" --scan "src/**/*.ts"
 
-# scavenge a corpus
-goblintown scavenge --task "What does the build system do?" \
-  --scan "package.json" --scan "tsconfig.json" --scan "src/**/*.ts"
+# Quick dig (lightweight)
+node dist/cli.js dig "Write a SQL join: users to last 5 orders" --pack 3
 
-# pack dispatch (lightweight)
-goblintown quest "Write a SQL join: users to last 5 orders" --pack 3
-
-# full pipeline with a budget cap
-goblintown rite "Refactor src/quest.ts to share the troll-review helper" \
-  --pack 3 --scan "src/quest.ts" --scan "src/troll-review.ts" \
+# Full tunnel with budget cap
+node dist/cli.js tunnel "Refactor this module" \
+  --pack 3 --scan "src/**/*.ts" \
   --budget 80000 --max-output 4096
 
-# variance comparison
-goblintown reroll <riteId>
-goblintown compare <riteA> <riteB>
+# Reroll and compare
+node dist/cli.js reroll <tunnelId>
+node dist/cli.js compare <tunnelA> <tunnelB>
 
-# share / archive
-goblintown export <riteId> --out my-rite.md
+# Export / observe
+node dist/cli.js export <tunnelId> --out result.md
+node dist/cli.js drift
+node dist/cli.js dirt --kind nightcrawler --since 2026-01-01 --limit 20
+node dist/cli.js audit <tunnelId>
+node dist/cli.js graph <tunnelId>
 
-# observability
-goblintown drift
-goblintown hoard --kind goblin --since 2026-04-30 --limit 20
-goblintown audit <riteId>
-goblintown graph <riteId|lootId>
-goblintown serve --port 7777    # web UI + SSE rite form
+# Web UI with live SSE stream
+node dist/cli.js serve --port 7777
 
-# federation
-goblintown send --to ../other-warren    --loot <id>
-goblintown send --to https://other:7777 --loot <id>
-goblintown inbox
-goblintown outbox
+# Federation
+node dist/cli.js send --to ../other-burrow --castings <id>
+node dist/cli.js send --to https://other:7777 --castings <id>
+node dist/cli.js inbox
+node dist/cli.js outbox
 ```
 
-## Models
+## Environment variables
 
-Defaults: Goblin / Gremlin / Raccoon / Troll / Pigeon on `gpt-5.4-mini`,
-Ogre on `gpt-5.5`. Override per creature with environment variables:
-
-- `GOBLINTOWN_MODEL_GOBLIN`
-- `GOBLINTOWN_MODEL_GREMLIN`
-- `GOBLINTOWN_MODEL_RACCOON`
-- `GOBLINTOWN_MODEL_TROLL`
-- `GOBLINTOWN_MODEL_OGRE`
-- `GOBLINTOWN_MODEL_PIGEON`
-
-`GOBLINTOWN_MAX_CONCURRENCY` (default 5) bounds in-flight OpenAI calls.
+```bash
+OPENAI_API_KEY                  # required
+WORMHOLE_MODEL_NIGHTCRAWLER     # default: gpt-5.4-mini
+WORMHOLE_MODEL_BLOODWORM        # default: gpt-5.4-mini
+WORMHOLE_MODEL_SILKWORM         # default: gpt-5.4-mini
+WORMHOLE_MODEL_TAPEWORM         # default: gpt-5.4-mini
+WORMHOLE_MODEL_EARTHWORM        # default: gpt-5.5
+WORMHOLE_MODEL_GLOWWORM         # default: gpt-5.4-mini
+WORMHOLE_MAX_CONCURRENCY        # default: 5 (in-flight OpenAI calls)
+WORMHOLE_NO_BANNER              # set to 1 to suppress worm animations
+```
 
 ## Reward plugins
 
-Drop a `.goblintown/reward.mjs` in your Warren to override the default scoring:
+Drop a `.wormhole/reward.mjs` in your Burrow to override the default scoring:
 
 ```js
-export default function (loot, verdict) {
-  return verdict.passed ? 0.8 + (1 - loot.drift.driftRate) * 0.2 : verdict.score * 0.5;
+export default function (castings, verdict) {
+  return verdict.passed ? 0.8 + (1 - castings.drift.driftRate) * 0.2 : verdict.score * 0.5;
 }
 ```
 
-The result is clamped to `[0, 1]`.
+## Web UI (SSE)
 
-## Federation
+`wormhole serve` exposes `/tunnel/new` — an HTML form that POSTs to `/api/tunnel` and subscribes to a live SSE stream. Run state is persisted so the stream history replays after a server restart.
 
-`goblintown send` writes to another Warren's inbox over the filesystem
-(`--to <path>`) or HTTP (`--to https://...`). Messages carry a content
-signature; if both Warrens set `peerSecret` in their manifests, an HMAC tag
-is also required.
+## HTTP API
 
-## Browser-driven rites (SSE)
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/` | Dirt overview |
+| GET | `/tunnel/new` | Browser form |
+| GET | `/tunnel/:id` | Tunnel detail |
+| GET | `/dig/:id` | Dig detail |
+| GET | `/castings/:id` | Single castings detail |
+| GET | `/drift` | Aggregate drift report |
+| GET | `/runs` | List of all SSE runs |
+| POST | `/api/tunnel` | Start a tunnel, returns `{ runId }` |
+| GET | `/api/tunnel/:runId/stream` | SSE stream of step events |
+| POST | `/api/inbox` | Federation receiver |
 
-`goblintown serve` exposes `/rite/new` — an HTML form that POSTs to
-`/api/rite` and subscribes to `/api/rite/<runId>/stream` for live progress.
-Run state is persisted to `.goblintown/runs/<runId>.json`, so the SSE
-history replays after a server restart; in-flight rites are marked
-interrupted on boot.
-
-## Layout
+## Burrow layout
 
 ```
-.goblintown/
+.wormhole/
   warren.json
   reward.mjs           # optional reward plugin
   hoard/
@@ -281,25 +172,8 @@ interrupted on boot.
     rites/<id>.json
     inbox/<id>.json
     outbox/<id>.json
-  runs/<runId>.json    # SSE-streamed rite-run state
+  runs/<runId>.json
 ```
-
-## HTTP API
-
-| Method | Path                          | Purpose |
-| ---    | ---                           | --- |
-| GET    | `/`                           | Hoard overview |
-| GET    | `/rite/new`                   | Browser form |
-| GET    | `/rite/:id`                   | Rite detail |
-| GET    | `/quest/:id`                  | Quest detail |
-| GET    | `/loot/:id`                   | Single Loot detail |
-| GET    | `/drift`                      | Aggregate drift report |
-| GET    | `/runs`                       | List of all SSE runs |
-| GET    | `/inbox`, `/outbox`           | Federation message lists |
-| POST   | `/api/rite`                   | Start a rite, returns `{ runId }` |
-| GET    | `/api/rite/:runId/stream`     | SSE stream of `RiteStep` events |
-| GET    | `/api/runs`                   | JSON list of run records |
-| POST   | `/api/inbox`                  | Federation receiver |
 
 ## Tests
 
@@ -307,11 +181,8 @@ interrupted on boot.
 npm test
 ```
 
-Pure-function coverage across drift, reward, Hoard content-addressing,
-federation signatures (incl. HMAC), audit aggregation, reward plugin loader,
-graph rendering, concurrency semaphore, budget tracker, run persistence,
-markdown export, and rite comparison. No OpenAI calls.
+Pure-function coverage: drift, reward, content-addressing, federation signatures, audit, graph, concurrency, budget, run persistence, export, and comparison. No OpenAI calls.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT

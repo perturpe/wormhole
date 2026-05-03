@@ -11,12 +11,12 @@ import type { CreatureKind, Loot, Rite } from "../types.js";
 function emptyDrift() {
   return {
     creatureMentions: {
-      goblin: 0,
-      gremlin: 0,
-      raccoon: 0,
-      troll: 0,
-      ogre: 0,
-      pigeon: 0,
+      nightcrawler: 0,
+      bloodworm: 0,
+      silkworm: 0,
+      tapeworm: 0,
+      earthworm: 0,
+      glowworm: 0,
     },
     totalCreatureWords: 0,
     outputWordCount: 1,
@@ -64,7 +64,7 @@ afterEach(async () => {
 });
 
 async function buildRite(id: string, task: string): Promise<Rite> {
-  const goblinId = await hoard.stash(loot(id, "goblin", `goblin-output-${id}`));
+  const goblinId = await hoard.stash(loot(id, "nightcrawler", `goblin-output-${id}`));
   const winnerLoot = (await hoard.getLoot(goblinId))!;
   winnerLoot.reward = 0.7;
   await hoard.stash(winnerLoot);

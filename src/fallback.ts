@@ -1,4 +1,4 @@
-import { makeOgre } from "./creatures.js";
+import { makeEarthworm } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
 import type { Loot, Personality, TrollVerdict } from "./types.js";
@@ -15,38 +15,38 @@ export interface OgreFallbackOptions {
 }
 
 export async function ogreFallback(opts: OgreFallbackOptions): Promise<Loot> {
-  const ogre = makeOgre(opts.personality);
+  const earthworm = makeEarthworm(opts.personality);
 
   const sections = opts.goblinLoot.map((g, i) => {
     const v = opts.trollVerdicts[g.id];
     const chaos = opts.chaosByGoblinId?.[g.id];
     return (
-      `--- Attempt ${i + 1} (loot ${g.id}, troll score ${v?.score?.toFixed(2) ?? "?"}, ${v?.passed ? "PASS" : "FAIL"}) ---\n` +
-      `Goblin output:\n${g.output}\n\n` +
-      `Troll critique:\n${v?.critique ?? "(none)"}\n\n` +
+      `--- Attempt ${i + 1} (castings ${g.id}, tapeworm score ${v?.score?.toFixed(2) ?? "?"}, ${v?.passed ? "PASS" : "FAIL"}) ---\n` +
+      `Nightcrawler output:\n${g.output}\n\n` +
+      `Tapeworm critique:\n${v?.critique ?? "(none)"}\n\n` +
       (chaos
-        ? `Gremlin chaos report:\n${chaos.output}\n`
-        : `Gremlin chaos report: (none)\n`)
+        ? `Bloodworm chaos report:\n${chaos.output}\n`
+        : `Bloodworm chaos report: (none)\n`)
     );
   });
 
   const userPrompt =
-    `The Goblin pack failed Troll review on this task:\n\n${opts.task}\n\n` +
+    `The Nightcrawler pack failed Tapeworm review on this task:\n\n${opts.task}\n\n` +
     `Below are all attempts, their critiques, and chaos reports. ` +
     `Synthesize a single correct, complete answer. ` +
-    `You may borrow from any attempt, but you must address every Troll critique and survive every Gremlin attack. ` +
+    `You may borrow from any attempt, but you must address every Tapeworm critique and survive every Bloodworm attack. ` +
     `Do not narrate your synthesis — just deliver the corrected answer.\n\n` +
     sections.join("\n");
 
-  const { text: output, usage } = await callCreature(ogre, userPrompt);
+  const { text: output, usage } = await callCreature(earthworm, userPrompt);
   const drift = measureDrift(output);
 
   const loot: Loot = {
     id: "",
     riteId: opts.riteId,
-    creatureKind: "ogre",
-    personality: ogre.personality,
-    model: ogre.model,
+    creatureKind: "earthworm",
+    personality: earthworm.personality,
+    model: earthworm.model,
     prompt: userPrompt,
     output,
     parentLootIds: opts.goblinLoot.map((g) => g.id),

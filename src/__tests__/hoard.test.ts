@@ -9,12 +9,12 @@ import type { Loot, Quest, Rite } from "../types.js";
 function emptyDrift() {
   return {
     creatureMentions: {
-      goblin: 0,
-      gremlin: 0,
-      raccoon: 0,
-      troll: 0,
-      ogre: 0,
-      pigeon: 0,
+      nightcrawler: 0,
+      bloodworm: 0,
+      silkworm: 0,
+      tapeworm: 0,
+      earthworm: 0,
+      glowworm: 0,
     },
     totalCreatureWords: 0,
     outputWordCount: 0,
@@ -25,7 +25,7 @@ function emptyDrift() {
 function makeLoot(overrides: Partial<Loot> = {}): Loot {
   return {
     id: "",
-    creatureKind: "goblin",
+    creatureKind: "nightcrawler",
     personality: "nerdy",
     model: "test-model",
     prompt: "p",

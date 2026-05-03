@@ -9,7 +9,7 @@ import type { Loot, TrollVerdict } from "../types.js";
 function makeLoot(): Loot {
   return {
     id: "x",
-    creatureKind: "goblin",
+    creatureKind: "nightcrawler",
     personality: "nerdy",
     model: "test",
     prompt: "p",
@@ -17,12 +17,12 @@ function makeLoot(): Loot {
     timestamp: 0,
     drift: {
       creatureMentions: {
-        goblin: 0,
-        gremlin: 0,
-        raccoon: 0,
-        troll: 0,
-        ogre: 0,
-        pigeon: 0,
+        nightcrawler: 0,
+        bloodworm: 0,
+        silkworm: 0,
+        tapeworm: 0,
+        earthworm: 0,
+        glowworm: 0,
       },
       totalCreatureWords: 0,
       outputWordCount: 1,
@@ -47,7 +47,7 @@ afterEach(async () => {
 });
 
 describe("loadRewardPlugin", () => {
-  it("returns the builtin shinies when no plugin is present", async () => {
+  it("returns the builtin castings when no plugin is present", async () => {
     const plugin = await loadRewardPlugin(dir);
     assert.equal(plugin.source, "builtin");
     const r = plugin.fn(makeLoot(), makeVerdict(0.5));

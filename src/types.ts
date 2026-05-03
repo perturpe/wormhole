@@ -1,18 +1,18 @@
 export type CreatureKind =
-  | "goblin"
-  | "gremlin"
-  | "raccoon"
-  | "troll"
-  | "ogre"
-  | "pigeon";
+  | "nightcrawler"
+  | "bloodworm"
+  | "silkworm"
+  | "tapeworm"
+  | "earthworm"
+  | "glowworm";
 
 export const CREATURE_KINDS: CreatureKind[] = [
-  "goblin",
-  "gremlin",
-  "raccoon",
-  "troll",
-  "ogre",
-  "pigeon",
+  "nightcrawler",
+  "bloodworm",
+  "silkworm",
+  "tapeworm",
+  "earthworm",
+  "glowworm",
 ];
 
 export type Personality =
@@ -120,9 +120,9 @@ export interface WarrenManifest {
   name: string;
   version: number;
   createdAt: string;
-  defaultModelGoblin: string;
-  defaultModelOgre: string;
-  defaultModelTroll: string;
+  defaultModelNightcrawler: string;
+  defaultModelEarthworm: string;
+  defaultModelTapeworm: string;
   /** Optional shared secret for HMAC-authenticated federation. */
   peerSecret?: string;
 }

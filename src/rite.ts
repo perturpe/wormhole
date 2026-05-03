@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { Budget, BudgetExceededError } from "./budget.js";
-import { makeGoblin } from "./creatures.js";
+import { makeNightcrawler } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
-import { shinies } from "./reward.js";
+import { castings } from "./reward.js";
 import { scavenge } from "./scavenge.js";
 import { chaosPass } from "./chaos.js";
 import { packVariant } from "./pack-prompt.js";
@@ -36,9 +36,9 @@ export type RiteStep =
   | { kind: "scavenge:start"; globs: string[] }
   | { kind: "scavenge:done"; lootId: string; fileCount: number }
   | { kind: "pack:start"; size: number }
-  | { kind: "pack:goblin"; lootId: string; index: number }
+  | { kind: "pack:nightcrawler"; lootId: string; index: number }
   | { kind: "chaos:start" }
-  | { kind: "chaos:done"; goblinId: string; gremlinId: string }
+  | { kind: "chaos:done"; nightcrawlerId: string; bloodwormId: string }
   | { kind: "review:start" }
   | { kind: "review:verdict"; verdict: TrollVerdict }
   | { kind: "fallback:start" }
@@ -120,23 +120,23 @@ export async function performRite(opts: RiteOptions): Promise<RiteResult> {
     onStep({ kind: "rite:done", outcome: rite.outcome });
     throw new BudgetExceededError(budget.used, opts.budgetTokens ?? 0);
   }
-  const goblin = makeGoblin(personality);
+  const nightcrawler = makeNightcrawler(personality);
   const taskWithFacts = factsBlock
-    ? `${opts.task}\n\nFacts gathered by the Raccoon:\n${factsBlock}`
+    ? `${opts.task}\n\nFacts gathered by the Silkworm:\n${factsBlock}`
     : opts.task;
 
   const goblinJobs = Array.from({ length: opts.packSize }, async (_, i) => {
     const variantPrompt = packVariant(taskWithFacts, i, opts.packSize);
-    const { text: output, usage } = await callCreature(goblin, variantPrompt, {
+    const { text: output, usage } = await callCreature(nightcrawler, variantPrompt, {
       maxOutputTokens: opts.maxOutputTokensPerCall,
     });
     const drift = measureDrift(output);
     const loot: Loot = {
       id: "",
       riteId,
-      creatureKind: "goblin",
-      personality: goblin.personality,
-      model: goblin.model,
+      creatureKind: "nightcrawler",
+      personality: nightcrawler.personality,
+      model: nightcrawler.model,
       prompt: variantPrompt,
       output,
       parentLootIds: rite.contextLootId ? [rite.contextLootId] : undefined,
@@ -145,7 +145,7 @@ export async function performRite(opts: RiteOptions): Promise<RiteResult> {
       usage,
     };
     await opts.hoard.stash(loot);
-    onStep({ kind: "pack:goblin", lootId: loot.id, index: i });
+    onStep({ kind: "pack:nightcrawler", lootId: loot.id, index: i });
     return loot;
   });
 
@@ -168,7 +168,7 @@ export async function performRite(opts: RiteOptions): Promise<RiteResult> {
       hoard: opts.hoard,
       riteId,
     });
-    onStep({ kind: "chaos:done", goblinId: g.id, gremlinId: c.id });
+    onStep({ kind: "chaos:done", nightcrawlerId: g.id, bloodwormId: c.id });
     return [g.id, c] as const;
   });
   const chaosResults = await Promise.all(chaosJobs);
@@ -182,7 +182,7 @@ export async function performRite(opts: RiteOptions): Promise<RiteResult> {
 
   // sequential so console output stays in pack order
   onStep({ kind: "review:start" });
-  const rewardFn = opts.rewardFn ?? shinies;
+  const rewardFn = opts.rewardFn ?? castings;
   for (const g of goblinLoot) {
     if (!checkBudget("review")) break;
     const { verdict, trollLoot } = await trollReview({

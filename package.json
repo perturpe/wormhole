@@ -1,20 +1,20 @@
 {
-  "name": "goblintown",
+  "name": "wormhole",
   "version": "1.0.0",
-  "description": "Multi-agent orchestration protocol on top of OpenAI.",
+  "description": "Worm-powered multi-agent orchestration protocol on top of OpenAI.",
   "license": "MIT",
-  "author": "0XBL33P",
-  "homepage": "https://github.com/0XBL33P/goblintown#readme",
+  "author": "Pert",
+  "homepage": "https://github.com/perturpe/wormhole#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/0XBL33P/goblintown.git"
+    "url": "git+https://github.com/perturpe/wormhole.git"
   },
   "bugs": {
-    "url": "https://github.com/0XBL33P/goblintown/issues"
+    "url": "https://github.com/perturpe/wormhole/issues"
   },
   "type": "module",
   "bin": {
-    "goblintown": "./dist/cli.js"
+    "wormhole": "./dist/cli.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -42,7 +42,8 @@
     "llm",
     "orchestration",
     "multi-agent",
-    "cli"
+    "cli",
+    "wormhole"
   ],
   "dependencies": {
     "express": "^4.21.0",

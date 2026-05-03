@@ -2,7 +2,7 @@ import { access } from "node:fs/promises";
 import { constants as FS } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { shinies } from "./reward.js";
+import { castings } from "./reward.js";
 import type { Loot, TrollVerdict } from "./types.js";
 
 export type RewardFn = (loot: Loot, verdict: TrollVerdict) => number;
@@ -39,5 +39,5 @@ export async function loadRewardPlugin(warrenRoot: string): Promise<RewardPlugin
     return { fn: wrapped, source: candidate };
   }
 
-  return { fn: shinies, source: "builtin" };
+  return { fn: castings, source: "builtin" };
 }

@@ -10,12 +10,12 @@ import type { CreatureKind, Loot, Rite } from "../types.js";
 function emptyDrift() {
   return {
     creatureMentions: {
-      goblin: 0,
-      gremlin: 0,
-      raccoon: 0,
-      troll: 0,
-      ogre: 0,
-      pigeon: 0,
+      nightcrawler: 0,
+      bloodworm: 0,
+      silkworm: 0,
+      tapeworm: 0,
+      earthworm: 0,
+      glowworm: 0,
     },
     totalCreatureWords: 0,
     outputWordCount: 1,
@@ -58,14 +58,14 @@ describe("renderRiteGraph", () => {
   });
 
   it("renders raccoon, goblin, gremlin, troll, and ogre rows", async () => {
-    const ra = await hoard.stash(loot("raccoon", "facts"));
-    const g1 = await hoard.stash(loot("goblin", "draft 1", [ra]));
-    const g2 = await hoard.stash(loot("goblin", "draft 2", [ra]));
-    const x1 = await hoard.stash(loot("gremlin", "attacks 1", [g1]));
-    const x2 = await hoard.stash(loot("gremlin", "attacks 2", [g2]));
-    const t1 = await hoard.stash(loot("troll", "verdict 1", [g1, x1]));
-    const t2 = await hoard.stash(loot("troll", "verdict 2", [g2, x2]));
-    const og = await hoard.stash(loot("ogre", "fallback", [g1, g2]));
+    const ra = await hoard.stash(loot("silkworm", "facts"));
+    const g1 = await hoard.stash(loot("nightcrawler", "draft 1", [ra]));
+    const g2 = await hoard.stash(loot("nightcrawler", "draft 2", [ra]));
+    const x1 = await hoard.stash(loot("bloodworm", "attacks 1", [g1]));
+    const x2 = await hoard.stash(loot("bloodworm", "attacks 2", [g2]));
+    const t1 = await hoard.stash(loot("tapeworm", "verdict 1", [g1, x1]));
+    const t2 = await hoard.stash(loot("tapeworm", "verdict 2", [g2, x2]));
+    const og = await hoard.stash(loot("earthworm", "fallback", [g1, g2]));
 
     const rite: Rite = {
       id: "rg1",
@@ -101,9 +101,9 @@ describe("renderRiteGraph", () => {
 
 describe("renderLootAncestry", () => {
   it("walks parent chain back to roots", async () => {
-    const root = await hoard.stash(loot("raccoon", "root"));
-    const mid = await hoard.stash(loot("goblin", "mid", [root]));
-    const top = await hoard.stash(loot("ogre", "top", [mid]));
+    const root = await hoard.stash(loot("silkworm", "root"));
+    const mid = await hoard.stash(loot("nightcrawler", "mid", [root]));
+    const top = await hoard.stash(loot("earthworm", "top", [mid]));
     const out = await renderLootAncestry(hoard, top);
     assert.ok(out);
     assert.match(out!, /ogre\s+/);
@@ -112,7 +112,7 @@ describe("renderLootAncestry", () => {
   });
 
   it("handles cycles without infinite recursion", async () => {
-    const a = await hoard.stash(loot("goblin", "a"));
+    const a = await hoard.stash(loot("nightcrawler", "a"));
     // Tamper: rewrite a's parents to point to itself
     const aLoot = await hoard.getLoot(a);
     assert.ok(aLoot);

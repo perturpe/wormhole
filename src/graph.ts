@@ -17,7 +17,7 @@ export async function renderRiteGraph(
   const allLoot = await hoard.allLoot();
   const trollByGoblin = new Map<string, Loot>();
   for (const l of allLoot) {
-    if (l.creatureKind !== "troll" || l.riteId !== riteId) continue;
+    if (l.creatureKind !== "tapeworm" || l.riteId !== riteId) continue;
     const goblinId = l.parentLootIds?.[0];
     if (goblinId) trollByGoblin.set(goblinId, l);
   }

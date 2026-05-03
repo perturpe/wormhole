@@ -29,69 +29,68 @@ import {
 } from "./types.js";
 import { initWarren, loadWarren } from "./warren.js";
 
-const HELP = `Goblintown — agent management protocol.
+const HELP = `Wormhole — worm-powered agent orchestration protocol.
 
 Usage:
-  goblintown init
-      Initialize a Warren in the current directory.
+  wormhole init
+      Initialize a Burrow in the current directory.
 
-  goblintown summon <kind> --task "..." [--personality <p>]
-      Run a single creature once. Output goes to stdout; loot is stashed.
+  wormhole wriggle <kind> --task "..." [--personality <p>]
+      Run a single worm once. Output goes to stdout; castings are stashed.
       Kinds: ${CREATURE_KINDS.join(" ")}
 
-  goblintown scavenge --task "..." --scan "<glob>" [--scan "<glob>"]...
-      Run a Raccoon over matched files and stash the distilled facts.
+  wormhole scavenge --task "..." --scan "<glob>" [--scan "<glob>"]...
+      Run a Silkworm over matched files and stash the distilled facts.
 
-  goblintown quest "<task>" [--pack <N>] [--personality <p>]
-      Goblin pack with Troll arbitration. Default pack=3. Lightweight.
+  wormhole dig "<task>" [--pack <N>] [--personality <p>]
+      Nightcrawler pack with Tapeworm arbitration. Default pack=3. Lightweight.
 
-  goblintown rite "<task>" [--pack <N>] [--scan <glob>]... [--personality <p>] [--no-fallback]
-                          [--budget <tokens>] [--max-output <tokens>]
-      Full ceremony: Raccoon → Goblin pack → Gremlin chaos → Troll review → Ogre fallback.
+  wormhole tunnel "<task>" [--pack <N>] [--scan <glob>]... [--personality <p>] [--no-fallback]
+                           [--budget <tokens>] [--max-output <tokens>]
+      Full ceremony: Silkworm → Nightcrawler pack → Bloodworm chaos → Tapeworm review → Earthworm fallback.
 
-  goblintown reroll <riteId> [--no-fallback] [--budget <tokens>]
-      Re-run an existing rite with identical task / pack / personality / scan.
+  wormhole reroll <tunnelId> [--no-fallback] [--budget <tokens>]
+      Re-run an existing tunnel with identical task / pack / personality / scan.
 
-  goblintown export <riteId> [--out <path.md>]
-      Render a Rite as a self-contained markdown document.
+  wormhole export <tunnelId> [--out <path.md>]
+      Render a Tunnel as a self-contained markdown document.
 
-  goblintown compare <riteA> <riteB>
-      Side-by-side comparison of two rites.
+  wormhole compare <tunnelA> <tunnelB>
+      Side-by-side comparison of two tunnels.
 
-  goblintown audit <riteId>
-      Walk a Rite's causal graph; report tokens, drift, longest chain, warnings.
+  wormhole audit <tunnelId>
+      Walk a Tunnel's causal graph; report tokens, drift, longest chain, warnings.
 
-  goblintown graph <riteId|lootId>
-      Render the causal graph as ASCII (rite-shaped if it's a rite id,
-      ancestry chain if it's a loot id).
+  wormhole graph <tunnelId|castingsId>
+      Render the causal graph as ASCII.
 
-  goblintown drift
-      Aggregate personality-drift report across all stashed loot.
+  wormhole drift
+      Aggregate personality-drift report across all stashed castings.
 
-  goblintown hoard [--kind <k>] [--since <iso|ms>] [--limit <N>] [--rite <id>] [--quest <id>]
-      List the contents of the Hoard, optionally filtered.
+  wormhole dirt [--kind <k>] [--since <iso|ms>] [--limit <N>] [--tunnel <id>] [--dig <id>]
+      List the contents of the Dirt, optionally filtered.
 
-  goblintown send --to <warren-path> --loot <id> [--audience "..."]
-      Pigeon-compress a Loot and deliver it to another Warren's inbox.
+  wormhole send --to <burrow-path> --castings <id> [--audience "..."]
+      Glowworm-compress castings and deliver them to another Burrow's inbox.
 
-  goblintown inbox
+  wormhole inbox
       List inbox messages and verify their signatures.
 
-  goblintown outbox
+  wormhole outbox
       List outbox records.
 
-  goblintown serve [--port <N>]
-      Start the Hoard web UI. Default port=7777.
+  wormhole serve [--port <N>]
+      Start the Dirt web UI. Default port=7777.
 
 Environment:
-  OPENAI_API_KEY              required (except for init / drift / hoard / inbox / outbox / audit / graph / export / compare)
-  GOBLINTOWN_MODEL_GOBLIN     default: gpt-5.4-mini
-  GOBLINTOWN_MODEL_OGRE       default: gpt-5.5
-  GOBLINTOWN_MODEL_TROLL      default: gpt-5.4-mini
-  GOBLINTOWN_MAX_CONCURRENCY  default: 5 (in-flight OpenAI calls)
-  (also: GREMLIN, RACCOON, PIGEON)
+  OPENAI_API_KEY                  required (except for init / drift / dirt / inbox / outbox / audit / graph / export / compare)
+  WORMHOLE_MODEL_NIGHTCRAWLER     default: gpt-5.4-mini
+  WORMHOLE_MODEL_EARTHWORM        default: gpt-5.5
+  WORMHOLE_MODEL_TAPEWORM         default: gpt-5.4-mini
+  WORMHOLE_MAX_CONCURRENCY        default: 5 (in-flight OpenAI calls)
+  (also: BLOODWORM, SILKWORM, GLOWWORM)
 
-"OpenAI tried to put the goblins back in the box. We built the box for them."
+"The worms will inherit the context window."
 `;
 
 async function main(): Promise<void> {
@@ -106,14 +105,14 @@ async function main(): Promise<void> {
   switch (cmd) {
     case "init":
       return cmdInit();
-    case "summon":
-      return cmdSummon(argv.slice(1));
+    case "wriggle":
+      return cmdWriggle(argv.slice(1));
     case "scavenge":
       return cmdScavenge(argv.slice(1));
-    case "quest":
-      return cmdQuest(argv.slice(1));
-    case "rite":
-      return cmdRite(argv.slice(1));
+    case "dig":
+      return cmdDig(argv.slice(1));
+    case "tunnel":
+      return cmdTunnel(argv.slice(1));
     case "reroll":
       return cmdReroll(argv.slice(1));
     case "export":
@@ -126,8 +125,8 @@ async function main(): Promise<void> {
       return cmdGraph(argv.slice(1));
     case "drift":
       return cmdDrift();
-    case "hoard":
-      return cmdHoard(argv.slice(1));
+    case "dirt":
+      return cmdDirt(argv.slice(1));
     case "send":
       return cmdSend(argv.slice(1));
     case "inbox":
@@ -145,16 +144,16 @@ async function main(): Promise<void> {
 async function cmdInit(): Promise<void> {
   const w = await initWarren(process.cwd());
   process.stdout.write(
-    `Warren "${w.manifest.name}" initialized at ${w.root}.\n` +
-      `Hoard is empty. Summon something.\n`,
+    `Burrow "${w.manifest.name}" initialized at ${w.root}.\n` +
+      `Dirt is empty. Wriggle something.\n`,
   );
 }
 
-async function cmdSummon(args: string[]): Promise<void> {
+async function cmdWriggle(args: string[]): Promise<void> {
   const kind = args[0] as CreatureKind | undefined;
   if (!kind || !CREATURE_KINDS.includes(kind)) {
     process.stderr.write(
-      `usage: goblintown summon <${CREATURE_KINDS.join("|")}> --task "..." [--personality <p>]\n`,
+      `usage: wormhole wriggle <${CREATURE_KINDS.join("|")}> --task "..." [--personality <p>]\n`,
     );
     process.exitCode = 1;
     return;
@@ -169,7 +168,7 @@ async function cmdSummon(args: string[]): Promise<void> {
   const personality = flags.personality as Personality | undefined;
   const creature = makeCreature(kind, personality);
 
-  printBanner(kind);
+  await printBanner(kind);
 
   const { text, usage } = await callCreatureStream(creature, task, (chunk) => {
     process.stdout.write(chunk);
@@ -193,20 +192,19 @@ async function cmdSummon(args: string[]): Promise<void> {
     await w.hoard.stash(loot);
     process.stdout.write(
       `\n— drift —\n` +
-        `  cross-creature words: ${drift.totalCreatureWords} / ${drift.outputWordCount}` +
+        `  cross-worm words: ${drift.totalCreatureWords} / ${drift.outputWordCount}` +
         `  rate=${drift.driftRate.toFixed(4)}\n` +
         `  ${formatMentions(drift.creatureMentions)}\n` +
-        `  loot: ${loot.id}  tokens: ${usage.totalTokens}\n`,
+        `  castings: ${loot.id}  tokens: ${usage.totalTokens}\n`,
     );
   } catch {
-    // No Warren — print the drift report anyway, just don't stash.
     const drift = measureDrift(text);
     process.stdout.write(
       `\n— drift —\n` +
-        `  cross-creature words: ${drift.totalCreatureWords} / ${drift.outputWordCount}` +
+        `  cross-worm words: ${drift.totalCreatureWords} / ${drift.outputWordCount}` +
         `  rate=${drift.driftRate.toFixed(4)}\n` +
         `  ${formatMentions(drift.creatureMentions)}\n` +
-        `  (no Warren — loot not stashed; tokens=${usage.totalTokens})\n`,
+        `  (no Burrow — castings not stashed; tokens=${usage.totalTokens})\n`,
     );
   }
 }
@@ -217,7 +215,7 @@ async function cmdScavenge(args: string[]): Promise<void> {
   const task = flags.task;
   if (!task || scanGlobs.length === 0) {
     process.stderr.write(
-      `usage: goblintown scavenge --task "..." --scan "<glob>" [--scan "<glob>"]...\n`,
+      `usage: wormhole scavenge --task "..." --scan "<glob>" [--scan "<glob>"]...\n`,
     );
     process.exitCode = 1;
     return;
@@ -238,17 +236,17 @@ async function cmdScavenge(args: string[]): Promise<void> {
     personality: flags.personality as Personality | undefined,
   });
   process.stdout.write(
-    `Raccoon scavenged ${result.files.length} file(s). Loot: ${result.loot.id}\n\n` +
+    `Silkworm scavenged ${result.files.length} file(s). Castings: ${result.loot.id}\n\n` +
       `${result.facts}\n`,
   );
 }
 
-async function cmdQuest(args: string[]): Promise<void> {
+async function cmdDig(args: string[]): Promise<void> {
   const positional = args.filter((a) => !a.startsWith("--"));
   const task = positional[0];
   if (!task) {
     process.stderr.write(
-      `usage: goblintown quest "<task>" [--pack <N>] [--personality <p>]\n`,
+      `usage: wormhole dig "<task>" [--pack <N>] [--personality <p>]\n`,
     );
     process.exitCode = 1;
     return;
@@ -260,7 +258,7 @@ async function cmdQuest(args: string[]): Promise<void> {
   const w = await loadWarren(process.cwd());
 
   process.stdout.write(
-    `Dispatching ${packSize} goblin(s) on quest "${truncate(task, 60)}"...\n`,
+    `Dispatching ${packSize} nightcrawler(s) on dig "${truncate(task, 60)}"...\n`,
   );
   const t0 = Date.now();
   const result = await dispatchQuest({
@@ -272,27 +270,27 @@ async function cmdQuest(args: string[]): Promise<void> {
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
 
   process.stdout.write(
-    `\nQuest ${result.quest.id} finished in ${dt}s.\n\n`,
+    `\nDig ${result.quest.id} finished in ${dt}s.\n\n`,
   );
   for (const l of result.loot) {
     const v = result.quest.trollVerdicts[l.id];
     const tag = l.id === result.winner.id ? "  <-- WINNER" : "";
     process.stdout.write(
-      `  ${l.id}  shinies=${(l.reward ?? 0).toFixed(3)}  ` +
-        `troll=${v.score.toFixed(2)} ${v.passed ? "PASS" : "FAIL"}  ` +
+      `  ${l.id}  castings=${(l.reward ?? 0).toFixed(3)}  ` +
+        `tapeworm=${v.score.toFixed(2)} ${v.passed ? "PASS" : "FAIL"}  ` +
         `drift=${l.drift.driftRate.toFixed(4)}${tag}\n`,
     );
     process.stdout.write(`     critique: ${truncate(v.critique, 120)}\n`);
   }
-  process.stdout.write(`\n— winning loot —\n\n${result.winner.output}\n`);
+  process.stdout.write(`\n— winning castings —\n\n${result.winner.output}\n`);
 }
 
-async function cmdRite(args: string[]): Promise<void> {
+async function cmdTunnel(args: string[]): Promise<void> {
   const positional = args.filter((a) => !a.startsWith("--"));
   const task = positional[0];
   if (!task) {
     process.stderr.write(
-      `usage: goblintown rite "<task>" [--pack <N>] [--scan <glob>]... [--personality <p>] [--no-fallback] [--budget <tokens>] [--max-output <tokens>]\n`,
+      `usage: wormhole tunnel "<task>" [--pack <N>] [--scan <glob>]... [--personality <p>] [--no-fallback] [--budget <tokens>] [--max-output <tokens>]\n`,
     );
     process.exitCode = 1;
     return;
@@ -313,7 +311,7 @@ async function cmdRite(args: string[]): Promise<void> {
     process.stdout.write(`(reward plugin: ${rewardPlugin.source})\n`);
   }
   process.stdout.write(
-    `Beginning rite (pack=${packSize}, scan=${scanGlobs.length} glob(s)` +
+    `Beginning tunnel (pack=${packSize}, scan=${scanGlobs.length} glob(s)` +
       `${budgetTokens ? `, budget=${budgetTokens}` : ""})...\n`,
   );
 
@@ -329,65 +327,65 @@ async function cmdRite(args: string[]): Promise<void> {
     noFallback,
     budgetTokens,
     maxOutputTokensPerCall,
-    onStep: (s) => process.stdout.write(formatRiteStep(s) + "\n"),
+    onStep: (s) => process.stdout.write(formatTunnelStep(s) + "\n"),
   });
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
 
-  process.stdout.write(`\nRite ${result.rite.id} finished in ${dt}s — ${result.rite.outcome}.\n\n`);
+  process.stdout.write(`\nTunnel ${result.rite.id} finished in ${dt}s — ${result.rite.outcome}.\n\n`);
 
   for (const gid of result.rite.goblinLootIds) {
     const v = result.rite.trollVerdicts[gid];
     const tag = gid === result.rite.winnerLootId ? "  <-- WINNER" : "";
     const tline =
       v
-        ? `troll=${v.score.toFixed(2)} ${v.passed ? "PASS" : "FAIL"}`
-        : "troll=—";
-    process.stdout.write(`  goblin ${gid}  ${tline}${tag}\n`);
+        ? `tapeworm=${v.score.toFixed(2)} ${v.passed ? "PASS" : "FAIL"}`
+        : "tapeworm=—";
+    process.stdout.write(`  nightcrawler ${gid}  ${tline}${tag}\n`);
     if (v?.critique) {
       process.stdout.write(`    critique: ${truncate(v.critique, 120)}\n`);
     }
   }
   if (result.rite.ogreLootId) {
-    process.stdout.write(`  ogre   ${result.rite.ogreLootId}  (fallback)\n`);
+    process.stdout.write(`  earthworm   ${result.rite.ogreLootId}  (fallback)\n`);
   }
 
-  process.stdout.write(`\n— winning loot —\n\n${result.winnerLoot.output}\n`);
+  process.stdout.write(`\n— winning castings —\n\n${result.winnerLoot.output}\n`);
 }
 
-function formatRiteStep(s: RiteStep): string {
+function formatTunnelStep(s: RiteStep): string {
   switch (s.kind) {
     case "scavenge:start":
-      return `  raccoon scavenging (${s.globs.length} glob(s))...`;
+      return `  silkworm scavenging (${s.globs.length} glob(s))...`;
     case "scavenge:done":
-      return `  raccoon stashed ${s.lootId} (${s.fileCount} file(s))`;
+      return `  silkworm stashed ${s.lootId} (${s.fileCount} file(s))`;
     case "pack:start":
       return `  dispatching pack of ${s.size}...`;
-    case "pack:goblin":
-      return `    goblin ${s.index + 1} → ${s.lootId}`;
+    case "pack:nightcrawler":
+      return `    nightcrawler ${s.index + 1} → ${s.lootId}`;
     case "chaos:start":
-      return `  gremlins running chaos pass...`;
+      return `  bloodworms running chaos pass...`;
     case "chaos:done":
-      return `    gremlin → ${s.gremlinId} (on goblin ${s.goblinId})`;
+      return `    bloodworm → ${s.bloodwormId} (on nightcrawler ${s.nightcrawlerId})`;
     case "review:start":
-      return `  troll reviewing...`;
+      return `  tapeworm reviewing...`;
     case "review:verdict":
-      return `    troll: ${s.verdict.passed ? "PASS" : "FAIL"} score=${s.verdict.score.toFixed(2)} (${s.verdict.lootId})`;
+      return `    tapeworm: ${s.verdict.passed ? "PASS" : "FAIL"} score=${s.verdict.score.toFixed(2)} (${s.verdict.lootId})`;
     case "fallback:start":
-      return `  pack failed; summoning ogre...`;
+      return `  pack failed; summoning earthworm...`;
     case "fallback:done":
-      return `  ogre delivered ${s.lootId}`;
+      return `  earthworm delivered ${s.lootId}`;
     case "budget:exceeded":
       return `  ⚠ budget exceeded at ${s.phase}: used ${s.used} / cap ${s.cap}`;
     case "rite:done":
-      return `  rite outcome: ${s.outcome}`;
+      return `  tunnel outcome: ${s.outcome}`;
   }
 }
 
 async function cmdReroll(args: string[]): Promise<void> {
-  const riteId = args.find((a) => !a.startsWith("--"));
-  if (!riteId) {
+  const tunnelId = args.find((a) => !a.startsWith("--"));
+  if (!tunnelId) {
     process.stderr.write(
-      `usage: goblintown reroll <riteId> [--no-fallback] [--budget <tokens>]\n`,
+      `usage: wormhole reroll <tunnelId> [--no-fallback] [--budget <tokens>]\n`,
     );
     process.exitCode = 1;
     return;
@@ -395,48 +393,48 @@ async function cmdReroll(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const w = await loadWarren(process.cwd());
   const rewardPlugin = await loadRewardPlugin(w.root);
-  const original = await w.hoard.getRite(riteId);
+  const original = await w.hoard.getRite(tunnelId);
   if (!original) {
-    process.stderr.write(`Rite ${riteId} not found.\n`);
+    process.stderr.write(`Tunnel ${tunnelId} not found.\n`);
     process.exitCode = 1;
     return;
   }
   process.stdout.write(
-    `Rerolling rite ${riteId}\n` +
+    `Rerolling tunnel ${tunnelId}\n` +
       `  task: "${truncate(original.task, 80)}"\n` +
       `  pack=${original.packSize}  personality=${original.personality}\n`,
   );
   const t0 = Date.now();
   const result = await reroll({
-    riteId,
+    riteId: tunnelId,
     cwd: w.root,
     hoard: w.hoard,
     rewardFn: rewardPlugin.fn,
     noFallback: flags["no-fallback"] === "true",
     budgetTokens: flags.budget ? Number(flags.budget) : undefined,
-    onStep: (s) => process.stdout.write(formatRiteStep(s) + "\n"),
+    onStep: (s) => process.stdout.write(formatTunnelStep(s) + "\n"),
   });
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
   process.stdout.write(
-    `\nNew rite ${result.rite.id} (${result.rite.outcome}) in ${dt}s.\n` +
-      `Compare: goblintown compare ${riteId} ${result.rite.id}\n`,
+    `\nNew tunnel ${result.rite.id} (${result.rite.outcome}) in ${dt}s.\n` +
+      `Compare: wormhole compare ${tunnelId} ${result.rite.id}\n`,
   );
 }
 
 async function cmdExport(args: string[]): Promise<void> {
-  const riteId = args.find((a) => !a.startsWith("--"));
-  if (!riteId) {
+  const tunnelId = args.find((a) => !a.startsWith("--"));
+  if (!tunnelId) {
     process.stderr.write(
-      `usage: goblintown export <riteId> [--out <path.md>]\n`,
+      `usage: wormhole export <tunnelId> [--out <path.md>]\n`,
     );
     process.exitCode = 1;
     return;
   }
   const flags = parseFlags(args);
   const w = await loadWarren(process.cwd());
-  const md = await exportRiteMarkdown(w.hoard, riteId);
+  const md = await exportRiteMarkdown(w.hoard, tunnelId);
   if (!md) {
-    process.stderr.write(`Rite ${riteId} not found.\n`);
+    process.stderr.write(`Tunnel ${tunnelId} not found.\n`);
     process.exitCode = 1;
     return;
   }
@@ -453,14 +451,14 @@ async function cmdCompare(args: string[]): Promise<void> {
   const positional = args.filter((a) => !a.startsWith("--"));
   const [a, b] = positional;
   if (!a || !b) {
-    process.stderr.write(`usage: goblintown compare <riteA> <riteB>\n`);
+    process.stderr.write(`usage: wormhole compare <tunnelA> <tunnelB>\n`);
     process.exitCode = 1;
     return;
   }
   const w = await loadWarren(process.cwd());
   const report = await compareRites(w.hoard, a, b);
   if (!report) {
-    process.stderr.write(`One or both rites not found (${a}, ${b}).\n`);
+    process.stderr.write(`One or both tunnels not found (${a}, ${b}).\n`);
     process.exitCode = 1;
     return;
   }
@@ -469,7 +467,7 @@ async function cmdCompare(args: string[]): Promise<void> {
     `  outcome:        ${x.rite.outcome}\n` +
     `  pack:           ${x.rite.packSize}\n` +
     `  personality:    ${x.rite.personality}\n` +
-    `  total loot:     ${x.totalLoot}\n` +
+    `  total castings: ${x.totalLoot}\n` +
     `  total tokens:   ${x.totalTokens}\n` +
     `  avg drift rate: ${x.avgDriftRate.toFixed(4)}\n` +
     `  pass rate:      ${(x.passRate * 100).toFixed(0)}%\n`;
@@ -492,25 +490,25 @@ async function cmdCompare(args: string[]): Promise<void> {
 }
 
 async function cmdAudit(args: string[]): Promise<void> {
-  const riteId = args[0];
-  if (!riteId) {
-    process.stderr.write(`usage: goblintown audit <riteId>\n`);
+  const tunnelId = args[0];
+  if (!tunnelId) {
+    process.stderr.write(`usage: wormhole audit <tunnelId>\n`);
     process.exitCode = 1;
     return;
   }
   const w = await loadWarren(process.cwd());
-  const report = await auditRite(w.hoard, riteId);
+  const report = await auditRite(w.hoard, tunnelId);
   if (!report) {
-    process.stderr.write(`Rite ${riteId} not found.\n`);
+    process.stderr.write(`Tunnel ${tunnelId} not found.\n`);
     process.exitCode = 1;
     return;
   }
   const r = report.rite;
   process.stdout.write(
-    `Audit of rite ${r.id}\n` +
+    `Audit of tunnel ${r.id}\n` +
       `  outcome:        ${r.outcome}\n` +
       `  task:           "${truncate(r.task, 80)}"\n` +
-      `  total loot:     ${report.totalLoot}\n` +
+      `  total castings: ${report.totalLoot}\n` +
       `  tokens:         total=${report.totalTokens} prompt=${report.promptTokens} completion=${report.completionTokens}\n` +
       `  longest chain:  depth=${report.longestChain.length}  ${report.longestChain.lootIds.join(" → ")}\n` +
       `  highest drift:  ${
@@ -519,12 +517,12 @@ async function cmdAudit(args: string[]): Promise<void> {
           : "(none)"
       }\n\n`,
   );
-  process.stdout.write(`By creature kind:\n`);
+  process.stdout.write(`By worm kind:\n`);
   for (const [kind, stats] of Object.entries(report.byKind)) {
     if (stats.count === 0) continue;
     process.stdout.write(
-      `  ${kind.padEnd(8)} n=${stats.count}  tokens=${stats.totalTokens}  ` +
-        `avg drift=${stats.avgDriftRate.toFixed(4)}  avg shinies=${stats.avgRewardOrZero.toFixed(3)}\n`,
+      `  ${kind.padEnd(12)} n=${stats.count}  tokens=${stats.totalTokens}  ` +
+        `avg drift=${stats.avgDriftRate.toFixed(4)}  avg castings=${stats.avgRewardOrZero.toFixed(3)}\n`,
     );
   }
   if (report.warnings.length > 0) {
@@ -536,7 +534,7 @@ async function cmdAudit(args: string[]): Promise<void> {
 async function cmdGraph(args: string[]): Promise<void> {
   const id = args[0];
   if (!id) {
-    process.stderr.write(`usage: goblintown graph <riteId|lootId>\n`);
+    process.stderr.write(`usage: wormhole graph <tunnelId|castingsId>\n`);
     process.exitCode = 1;
     return;
   }
@@ -551,7 +549,7 @@ async function cmdGraph(args: string[]): Promise<void> {
     process.stdout.write(lootRendered + "\n");
     return;
   }
-  process.stderr.write(`No rite or loot found with id ${id}.\n`);
+  process.stderr.write(`No tunnel or castings found with id ${id}.\n`);
   process.exitCode = 1;
 }
 
@@ -559,43 +557,43 @@ async function cmdDrift(): Promise<void> {
   const w = await loadWarren(process.cwd());
   const all = await w.hoard.allLoot();
   if (all.length === 0) {
-    process.stdout.write(`Hoard is empty.\n`);
+    process.stdout.write(`Dirt is empty.\n`);
     return;
   }
-  process.stdout.write(`Hoard contains ${all.length} loot drop(s).\n\n`);
+  process.stdout.write(`Dirt contains ${all.length} castings drop(s).\n\n`);
 
   const byKind = new Map<CreatureKind, number[]>();
   for (const k of CREATURE_KINDS) byKind.set(k, []);
   for (const l of all) byKind.get(l.creatureKind)?.push(l.drift.driftRate);
 
   process.stdout.write(
-    `Drift rate by creature kind (cross-creature mentions / total words):\n`,
+    `Drift rate by worm kind (cross-worm mentions / total words):\n`,
   );
   for (const k of CREATURE_KINDS) {
     const rates = byKind.get(k) ?? [];
     if (rates.length === 0) {
-      process.stdout.write(`  ${k.padEnd(8)} (n=0)\n`);
+      process.stdout.write(`  ${k.padEnd(12)} (n=0)\n`);
       continue;
     }
     const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
     process.stdout.write(
-      `  ${k.padEnd(8)} avg=${avg.toFixed(4)}  n=${rates.length}\n`,
+      `  ${k.padEnd(12)} avg=${avg.toFixed(4)}  n=${rates.length}\n`,
     );
   }
   process.stdout.write(
-    `\nReminder: high cross-creature drift means your reward signal is leaking.\n` +
+    `\nReminder: high cross-worm drift means your reward signal is leaking.\n` +
       `That is the exact bug from the Incident. Tune accordingly.\n`,
   );
 }
 
-async function cmdHoard(args: string[]): Promise<void> {
+async function cmdDirt(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const w = await loadWarren(process.cwd());
   const limit = flags.limit ? Math.max(1, Number(flags.limit)) : Infinity;
   const since = flags.since ? parseTimestamp(flags.since) : null;
   const kind = flags.kind as CreatureKind | undefined;
-  const filterRite = flags.rite;
-  const filterQuest = flags.quest;
+  const filterTunnel = flags.tunnel;
+  const filterDig = flags.dig;
 
   if (kind && !CREATURE_KINDS.includes(kind)) {
     process.stderr.write(`unknown --kind: ${kind}\n`);
@@ -606,8 +604,8 @@ async function cmdHoard(args: string[]): Promise<void> {
   let loot = await w.hoard.allLoot();
   if (kind) loot = loot.filter((l) => l.creatureKind === kind);
   if (since !== null) loot = loot.filter((l) => l.timestamp >= since);
-  if (filterRite) loot = loot.filter((l) => l.riteId === filterRite);
-  if (filterQuest) loot = loot.filter((l) => l.questId === filterQuest);
+  if (filterTunnel) loot = loot.filter((l) => l.riteId === filterTunnel);
+  if (filterDig) loot = loot.filter((l) => l.questId === filterDig);
   loot.sort((a, b) => b.timestamp - a.timestamp);
   if (Number.isFinite(limit)) loot = loot.slice(0, limit);
 
@@ -620,18 +618,18 @@ async function cmdHoard(args: string[]): Promise<void> {
   quests.sort((a, b) => b.startedAt - a.startedAt);
 
   process.stdout.write(
-    `Hoard at ${w.root}\n` +
-      `  loot:   ${loot.length}${kind ? ` (kind=${kind})` : ""}` +
+    `Dirt at ${w.root}\n` +
+      `  castings: ${loot.length}${kind ? ` (kind=${kind})` : ""}` +
       `${since !== null ? ` (since=${new Date(since).toISOString()})` : ""}\n` +
-      `  quests: ${quests.length}\n` +
-      `  rites:  ${rites.length}\n\n`,
+      `  digs:     ${quests.length}\n` +
+      `  tunnels:  ${rites.length}\n\n`,
   );
 
-  if (kind || filterRite || filterQuest || since !== null) {
+  if (kind || filterTunnel || filterDig || since !== null) {
     for (const l of loot) {
       const tokens = l.usage ? `tokens=${l.usage.totalTokens} ` : "";
       process.stdout.write(
-        `  ${l.creatureKind.padEnd(8)} ${l.id}  ${tokens}drift=${l.drift.driftRate.toFixed(4)}` +
+        `  ${l.creatureKind.padEnd(12)} ${l.id}  ${tokens}drift=${l.drift.driftRate.toFixed(4)}` +
           ` ${new Date(l.timestamp).toISOString()}\n`,
       );
     }
@@ -640,13 +638,13 @@ async function cmdHoard(args: string[]): Promise<void> {
 
   for (const r of rites) {
     process.stdout.write(
-      `  rite  ${r.id}  ${r.outcome.padEnd(15)}  pack=${r.packSize}\n` +
+      `  tunnel  ${r.id}  ${r.outcome.padEnd(15)}  pack=${r.packSize}\n` +
         `    "${truncate(r.task, 80)}"\n`,
     );
   }
   for (const q of quests) {
     process.stdout.write(
-      `  quest ${q.id}  pack=${q.packSize}  winner=${q.winnerLootId ?? "—"}\n` +
+      `  dig     ${q.id}  pack=${q.packSize}  winner=${q.winnerLootId ?? "—"}\n` +
         `    "${truncate(q.task, 80)}"\n`,
     );
   }
@@ -655,7 +653,6 @@ async function cmdHoard(args: string[]): Promise<void> {
 function parseTimestamp(raw: string): number {
   const asNum = Number(raw);
   if (Number.isFinite(asNum) && raw.trim().length > 0) {
-    // 10-digit values are seconds; longer values are milliseconds
     if (raw.length <= 10) return asNum * 1000;
     return asNum;
   }
@@ -667,10 +664,10 @@ function parseTimestamp(raw: string): number {
 async function cmdSend(args: string[]): Promise<void> {
   const flags = parseFlags(args);
   const to = flags.to;
-  const lootId = flags.loot;
-  if (!to || !lootId) {
+  const castingsId = flags.castings;
+  if (!to || !castingsId) {
     process.stderr.write(
-      `usage: goblintown send --to <warren-path-or-url> --loot <id> [--audience "..."]\n`,
+      `usage: wormhole send --to <burrow-path-or-url> --castings <id> [--audience "..."]\n`,
     );
     process.exitCode = 1;
     return;
@@ -683,14 +680,14 @@ async function cmdSend(args: string[]): Promise<void> {
       fromHoard: w.hoard,
       fromPeerSecret: w.manifest.peerSecret,
       toUrl: to,
-      sourceLootId: lootId,
+      sourceLootId: castingsId,
       audience: flags.audience,
       personality: flags.personality as Personality | undefined,
     });
     process.stdout.write(
-      `Pigeon delivered to ${to} (remote id ${result.remoteId}).\n` +
-        `  source loot:  ${result.outbox.sourceLootId}\n` +
-        `  pigeon loot:  ${result.outbox.pigeonLootId}\n` +
+      `Glowworm delivered to ${to} (remote id ${result.remoteId}).\n` +
+        `  source castings:  ${result.outbox.sourceLootId}\n` +
+        `  glowworm castings:  ${result.outbox.pigeonLootId}\n` +
         `  signature:    ${result.outbox.signature}\n`,
     );
     return;
@@ -700,14 +697,14 @@ async function cmdSend(args: string[]): Promise<void> {
     fromHoard: w.hoard,
     fromPeerSecret: w.manifest.peerSecret,
     toWarrenPath: to,
-    sourceLootId: lootId,
+    sourceLootId: castingsId,
     audience: flags.audience,
     personality: flags.personality as Personality | undefined,
   });
   process.stdout.write(
-    `Pigeon delivered ${result.outbox.id} to ${result.deliveredTo}.\n` +
-      `  source loot:  ${result.outbox.sourceLootId}\n` +
-      `  pigeon loot:  ${result.outbox.pigeonLootId}\n` +
+    `Glowworm delivered ${result.outbox.id} to ${result.deliveredTo}.\n` +
+      `  source castings:  ${result.outbox.sourceLootId}\n` +
+      `  glowworm castings:  ${result.outbox.pigeonLootId}\n` +
       `  signature:    ${result.outbox.signature}\n`,
   );
 }
@@ -741,7 +738,7 @@ async function cmdOutbox(): Promise<void> {
   }
   for (const r of recs) {
     process.stdout.write(
-      `${r.id}  to=${r.toWarren}  source=${r.sourceLootId}  pigeon=${r.pigeonLootId}\n`,
+      `${r.id}  to=${r.toWarren}  source=${r.sourceLootId}  glowworm=${r.pigeonLootId}\n`,
     );
   }
 }
@@ -789,6 +786,6 @@ function truncate(s: string, n: number): string {
 }
 
 main().catch((err) => {
-  process.stderr.write(`\nGoblintown error: ${err?.message ?? err}\n`);
+  process.stderr.write(`\nWormhole error: ${err?.message ?? err}\n`);
   process.exitCode = 1;
 });

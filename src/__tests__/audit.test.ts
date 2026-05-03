@@ -10,12 +10,12 @@ import type { CreatureKind, Loot, Rite, TokenUsage } from "../types.js";
 function emptyDrift(rate = 0) {
   return {
     creatureMentions: {
-      goblin: 0,
-      gremlin: 0,
-      raccoon: 0,
-      troll: 0,
-      ogre: 0,
-      pigeon: 0,
+      nightcrawler: 0,
+      bloodworm: 0,
+      silkworm: 0,
+      tapeworm: 0,
+      earthworm: 0,
+      glowworm: 0,
     },
     totalCreatureWords: 0,
     outputWordCount: 100,
@@ -74,13 +74,13 @@ describe("auditRite", () => {
   });
 
   it("aggregates tokens, drift, and longest chain", async () => {
-    const raccoon = loot("raccoon", "facts", undefined, 0.0, 80);
+    const raccoon = loot("silkworm", "facts", undefined, 0.0, 80);
     const ra = await hoard.stash(raccoon);
-    const goblin = loot("goblin", "draft answer", [ra], 0.05, 200);
+    const goblin = loot("nightcrawler", "draft answer", [ra], 0.05, 200);
     const ga = await hoard.stash(goblin);
-    const gremlin = loot("gremlin", "attacks", [ga], 0.1, 150);
+    const gremlin = loot("bloodworm", "attacks", [ga], 0.1, 150);
     const gra = await hoard.stash(gremlin);
-    const troll = loot("troll", '{"passed":true,"score":0.8,"critique":"ok"}', [
+    const troll = loot("tapeworm", '{"passed":true,"score":0.8,"critique":"ok"}', [
       ga,
       gra,
     ], 0.0, 50);
@@ -111,13 +111,13 @@ describe("auditRite", () => {
     assert.ok(report);
     assert.equal(report!.totalLoot, 3, "raccoon + goblin + gremlin");
     assert.equal(report!.totalTokens, 80 + 200 + 150);
-    assert.equal(report!.byKind.goblin.count, 1);
-    assert.equal(report!.byKind.gremlin.count, 1);
-    assert.equal(report!.byKind.raccoon.count, 1);
+    assert.equal(report!.byKind.nightcrawler.count, 1);
+    assert.equal(report!.byKind.bloodworm.count, 1);
+    assert.equal(report!.byKind.silkworm.count, 1);
 
     // Highest drift rate is the gremlin at 0.1
     assert.ok(report!.highestDrift);
-    assert.equal(report!.highestDrift!.kind, "gremlin");
+    assert.equal(report!.highestDrift!.kind, "bloodworm");
 
     // Longest chain: raccoon → goblin → gremlin = depth 3
     assert.equal(report!.longestChain.length, 3);
@@ -126,7 +126,7 @@ describe("auditRite", () => {
   });
 
   it("warns when ogre_fallback was declared but no ogre loot is present", async () => {
-    const goblinId = await hoard.stash(loot("goblin", "fail attempt"));
+    const goblinId = await hoard.stash(loot("nightcrawler", "fail attempt"));
     const rite: Rite = {
       id: "r2",
       task: "t",
@@ -143,7 +143,7 @@ describe("auditRite", () => {
     const report = await auditRite(hoard, "r2");
     assert.ok(report);
     assert.ok(
-      report!.warnings.some((w) => w.includes("ogre")),
+      report!.warnings.some((w) => w.includes("earthworm")),
       "should warn about missing ogre loot",
     );
   });

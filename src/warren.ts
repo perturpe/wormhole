@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { Hoard } from "./hoard.js";
 import type { WarrenManifest } from "./types.js";
 
-const WARREN_DIRNAME = ".goblintown";
+const WARREN_DIRNAME = ".wormhole";
 const MANIFEST_FILE = "warren.json";
 
 export interface Warren {
@@ -25,9 +25,9 @@ export async function initWarren(root: string): Promise<Warren> {
     name: pathBasename(root),
     version: 1,
     createdAt: new Date().toISOString(),
-    defaultModelGoblin: process.env.GOBLINTOWN_MODEL_GOBLIN ?? "gpt-5.4-mini",
-    defaultModelOgre: process.env.GOBLINTOWN_MODEL_OGRE ?? "gpt-5.5",
-    defaultModelTroll: process.env.GOBLINTOWN_MODEL_TROLL ?? "gpt-5.4-mini",
+    defaultModelNightcrawler: process.env.WORMHOLE_MODEL_NIGHTCRAWLER ?? "gpt-5.4-mini",
+    defaultModelEarthworm: process.env.WORMHOLE_MODEL_EARTHWORM ?? "gpt-5.5",
+    defaultModelTapeworm: process.env.WORMHOLE_MODEL_TAPEWORM ?? "gpt-5.4-mini",
   };
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
 
@@ -38,7 +38,7 @@ export async function loadWarren(cwd: string): Promise<Warren> {
   const root = await findWarrenRoot(cwd);
   if (!root) {
     throw new Error(
-      `No Warren found above ${cwd}. Run \`goblintown init\` first.`,
+      `No Burrow found above ${cwd}. Run \`wormhole init\` first.`,
     );
   }
   const manifestPath = join(root, WARREN_DIRNAME, MANIFEST_FILE);

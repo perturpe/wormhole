@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { makeGoblin } from "./creatures.js";
+import { makeNightcrawler } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
 import { packVariant } from "./pack-prompt.js";
-import { shinies } from "./reward.js";
+import { castings } from "./reward.js";
 import { trollReview } from "./troll-review.js";
 import type { Loot, Personality, Quest } from "./types.js";
 import type { Hoard } from "./hoard.js";
@@ -36,17 +36,17 @@ export async function dispatchQuest(opts: DispatchOptions): Promise<DispatchResu
     startedAt: Date.now(),
   };
 
-  const goblin = makeGoblin(personality);
+  const nightcrawler = makeNightcrawler(personality);
   const goblinJobs = Array.from({ length: opts.packSize }, async (_, i) => {
     const variantPrompt = packVariant(opts.task, i, opts.packSize);
-    const { text: output, usage } = await callCreature(goblin, variantPrompt);
+    const { text: output, usage } = await callCreature(nightcrawler, variantPrompt);
     const drift = measureDrift(output);
     const loot: Loot = {
       id: "",
       questId,
-      creatureKind: "goblin",
-      personality: goblin.personality,
-      model: goblin.model,
+      creatureKind: "nightcrawler",
+      personality: nightcrawler.personality,
+      model: nightcrawler.model,
       prompt: variantPrompt,
       output,
       timestamp: Date.now(),
@@ -60,7 +60,7 @@ export async function dispatchQuest(opts: DispatchOptions): Promise<DispatchResu
   const loot = await Promise.all(goblinJobs);
   quest.lootIds = loot.map((l) => l.id);
 
-  const rewardFn = opts.rewardFn ?? shinies;
+  const rewardFn = opts.rewardFn ?? castings;
   for (const item of loot) {
     const { verdict } = await trollReview({
       goblinLoot: item,

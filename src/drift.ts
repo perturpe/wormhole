@@ -3,12 +3,12 @@ import { CREATURE_KINDS, type CreatureKind, type DriftReport } from "./types.js"
 export function measureDrift(output: string): DriftReport {
   const lower = output.toLowerCase();
   const mentions: Record<CreatureKind, number> = {
-    goblin: 0,
-    gremlin: 0,
-    raccoon: 0,
-    troll: 0,
-    ogre: 0,
-    pigeon: 0,
+    nightcrawler: 0,
+    bloodworm: 0,
+    silkworm: 0,
+    tapeworm: 0,
+    earthworm: 0,
+    glowworm: 0,
   };
 
   for (const kind of CREATURE_KINDS) {

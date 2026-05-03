@@ -6,12 +6,12 @@ import { CREATURE_KINDS, type CreatureKind } from "../types.js";
 // Changing this list is a deliberate protocol change — the test is here so
 // it can't happen quietly.
 const ROSTER: CreatureKind[] = [
-  "goblin",
-  "gremlin",
-  "raccoon",
-  "troll",
-  "ogre",
-  "pigeon",
+  "nightcrawler",
+  "bloodworm",
+  "silkworm",
+  "tapeworm",
+  "earthworm",
+  "glowworm",
 ];
 
 describe("creature roster", () => {

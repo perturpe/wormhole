@@ -4,5 +4,6 @@ dist/
 .env.local
 *.log
 
-# per-project Warren state
+# per-project Burrow state
+.wormhole/
 .goblintown/

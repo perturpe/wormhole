@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { glob } from "glob";
 import { relative } from "node:path";
-import { makeRaccoon } from "./creatures.js";
+import { makeSilkworm } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
 import type { Loot, Personality } from "./types.js";
@@ -13,7 +13,7 @@ const MAX_TOTAL_BYTES = 512 * 1024;
 const IGNORE = [
   "**/node_modules/**",
   "**/dist/**",
-  "**/.goblintown/**",
+  "**/.wormhole/**",
   "**/.git/**",
 ];
 
@@ -93,24 +93,24 @@ export interface ScavengeResult {
 export async function scavenge(opts: ScavengeOptions): Promise<ScavengeResult> {
   const files = await gatherFiles(opts.cwd, opts.scanGlobs);
   const dump = formatContextDump(files);
-  const raccoon = makeRaccoon(opts.personality);
+  const silkworm = makeSilkworm(opts.personality);
 
   const fileWord = files.length === 1 ? "file" : "files";
   const userPrompt =
     `Task being prepared:\n${opts.task}\n\n` +
-    `Context dump from the Warren (${files.length} ${fileWord}):\n` +
+    `Context dump from the Burrow (${files.length} ${fileWord}):\n` +
     dump +
     `\n\nReturn only the facts that matter for the task. Bullet points. Use "MISSING: ..." for anything needed but absent.`;
 
-  const { text: output, usage } = await callCreature(raccoon, userPrompt);
+  const { text: output, usage } = await callCreature(silkworm, userPrompt);
   const drift = measureDrift(output);
 
   const loot: Loot = {
     id: "",
     riteId: opts.riteId,
-    creatureKind: "raccoon",
-    personality: raccoon.personality,
-    model: raccoon.model,
+    creatureKind: "silkworm",
+    personality: silkworm.personality,
+    model: silkworm.model,
     prompt: userPrompt,
     output,
     timestamp: Date.now(),

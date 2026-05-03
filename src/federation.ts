@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { resolve } from "node:path";
-import { makePigeon } from "./creatures.js";
+import { makeGlowworm } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
 import { Hoard } from "./hoard.js";
@@ -35,14 +35,14 @@ export async function sendToWarren(opts: SendOptions): Promise<SendResult> {
   }
 
   const audience = opts.audience ?? "another Warren's reviewer";
-  const pigeon = makePigeon(opts.personality);
+  const pigeon = makeGlowworm(opts.personality);
   const userPrompt = pigeonPrompt(audience, sourceLoot.output);
   const { text: compressed, usage } = await callCreature(pigeon, userPrompt);
   const drift = measureDrift(compressed);
 
   const pigeonLoot: Loot = {
     id: "",
-    creatureKind: "pigeon",
+    creatureKind: "glowworm",
     personality: pigeon.personality,
     model: pigeon.model,
     prompt: userPrompt,
@@ -138,14 +138,14 @@ export async function sendToWarrenHttp(
     throw new Error(`Source Loot ${opts.sourceLootId} not found in Hoard.`);
   }
   const audience = opts.audience ?? "another Warren's reviewer";
-  const pigeon = makePigeon(opts.personality);
+  const pigeon = makeGlowworm(opts.personality);
   const userPrompt = pigeonPrompt(audience, sourceLoot.output);
   const { text: compressed, usage } = await callCreature(pigeon, userPrompt);
   const drift = measureDrift(compressed);
 
   const pigeonLoot: Loot = {
     id: "",
-    creatureKind: "pigeon",
+    creatureKind: "glowworm",
     personality: pigeon.personality,
     model: pigeon.model,
     prompt: userPrompt,

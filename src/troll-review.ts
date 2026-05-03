@@ -1,4 +1,4 @@
-import { makeTroll } from "./creatures.js";
+import { makeTapeworm } from "./creatures.js";
 import { measureDrift } from "./drift.js";
 import { callCreature } from "./openai-client.js";
 import type { Loot, Personality, TrollVerdict } from "./types.js";
@@ -19,17 +19,17 @@ export interface TrollReviewResult {
 }
 
 export async function trollReview(opts: TrollReviewOptions): Promise<TrollReviewResult> {
-  const troll = makeTroll(opts.personality);
+  const tapeworm = makeTapeworm(opts.personality);
   const chaosBlock = opts.chaosLoot
-    ? `\n\nGremlin chaos report (treat findings as evidence against passing):\n${opts.chaosLoot.output}`
+    ? `\n\nBloodworm chaos report (treat findings as evidence against passing):\n${opts.chaosLoot.output}`
     : "";
   const userPrompt =
     `Original task:\n${opts.originalTask}\n\n` +
-    `Goblin output:\n${opts.goblinLoot.output}` +
+    `Nightcrawler output:\n${opts.goblinLoot.output}` +
     chaosBlock +
     `\n\nReply with a single JSON object: { "passed": boolean, "score": number 0-1, "critique": string }.`;
 
-  const { text: raw, usage } = await callCreature(troll, userPrompt);
+  const { text: raw, usage } = await callCreature(tapeworm, userPrompt);
   const parsed = parseLooseJson(raw);
   const verdict: TrollVerdict = {
     lootId: opts.goblinLoot.id,
@@ -48,9 +48,9 @@ export async function trollReview(opts: TrollReviewOptions): Promise<TrollReview
   const trollLoot: Loot = {
     id: "",
     riteId: opts.riteId,
-    creatureKind: "troll",
-    personality: troll.personality,
-    model: troll.model,
+    creatureKind: "tapeworm",
+    personality: tapeworm.personality,
+    model: tapeworm.model,
     prompt: userPrompt,
     output: raw,
     parentLootIds: parents,

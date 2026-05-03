@@ -17,16 +17,16 @@ describe("measureDrift", () => {
     const r = measureDrift(
       "the goblin met two goblins and a Troll, but ignored the trolling reply.",
     );
-    assert.equal(r.creatureMentions.goblin, 2, "goblin + goblins = 2");
-    assert.equal(r.creatureMentions.troll, 1, "trolling should NOT match troll");
+    assert.equal(r.creatureMentions.nightcrawler, 2, "goblin + goblins = 2");
+    assert.equal(r.creatureMentions.tapeworm, 1, "trolling should NOT match troll");
     assert.equal(r.totalCreatureWords, 3);
     assert.ok(r.driftRate > 0);
   });
 
   it("does not double-count overlapping creature roots", () => {
     const r = measureDrift("Pigeons and pigeon. ogre. ogres.");
-    assert.equal(r.creatureMentions.pigeon, 2);
-    assert.equal(r.creatureMentions.ogre, 2);
+    assert.equal(r.creatureMentions.glowworm, 2);
+    assert.equal(r.creatureMentions.earthworm, 2);
   });
 
   it("treats unrelated text as zero drift", () => {
@@ -39,17 +39,17 @@ describe("measureDrift", () => {
 describe("crossCreatureDrift", () => {
   it("excludes self-mentions when computing cross-creature drift", () => {
     const text = "goblin goblin goblin raccoon";
-    const cross = crossCreatureDrift(text, "goblin");
+    const cross = crossCreatureDrift(text, "nightcrawler");
     // 1 cross word (raccoon) over 4 total words = 0.25
     assert.equal(cross, 0.25);
   });
 
   it("returns 0 when only self-mentions are present", () => {
     const text = "troll troll trolls";
-    assert.equal(crossCreatureDrift(text, "troll"), 0);
+    assert.equal(crossCreatureDrift(text, "tapeworm"), 0);
   });
 
   it("returns 0 for empty input", () => {
-    assert.equal(crossCreatureDrift("", "goblin"), 0);
+    assert.equal(crossCreatureDrift("", "nightcrawler"), 0);
   });
 });
