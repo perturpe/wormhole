@@ -25,7 +25,7 @@ export interface RunRecord {
 }
 
 export async function ensureRunDir(warrenRoot: string): Promise<string> {
-  const dir = join(warrenRoot, ".goblintown", "runs");
+  const dir = join(warrenRoot, ".wormhole", "runs");
   await mkdir(dir, { recursive: true });
   return dir;
 }

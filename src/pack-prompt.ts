@@ -27,5 +27,5 @@ export function packVariant(
     );
   }
   const hint = APPROACH_HINTS[index % APPROACH_HINTS.length];
-  return `${task}\n\n[Goblin ${index + 1} of ${packSize}: ${hint}. Do not coordinate with siblings.]`;
+  return `${task}\n\n[Worm ${index + 1} of ${packSize}: ${hint}. Do not coordinate with siblings.]`;
 }

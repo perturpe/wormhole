@@ -1,18 +1,4 @@
-import OpenAI from "openai";
-import { sharedSemaphore } from "./concurrency.js";
 import type { Creature, TokenUsage } from "./types.js";
-
-let _client: OpenAI | null = null;
-
-function getClient(): OpenAI {
-  if (_client) return _client;
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not set.");
-  }
-  _client = new OpenAI({ apiKey, maxRetries: 4 });
-  return _client;
-}
 
 export interface CallOptions {
   maxOutputTokens?: number;
@@ -24,115 +10,64 @@ export interface CreatureResponse {
   usage: TokenUsage;
 }
 
-// gpt-5 and o-series reasoning models reject `temperature` and use
-// `max_completion_tokens` instead of `max_tokens`.
-function isFixedSamplingModel(model: string): boolean {
-  return /^(gpt-5|o\d)/i.test(model);
+const MOCK_DELAY_MS = 400;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
-interface BaseParams {
-  model: string;
-  messages: Array<{ role: "system" | "user"; content: string }>;
-  temperature?: number;
-  max_tokens?: number;
-  max_completion_tokens?: number;
+function mockUsage(model: string): TokenUsage {
+  return { promptTokens: 120, completionTokens: 80, totalTokens: 200, model };
 }
 
-function buildBaseParams(
-  creature: Creature,
-  userPrompt: string,
-  opts: CallOptions,
-): BaseParams {
-  const fixed = isFixedSamplingModel(creature.model);
-  const params: BaseParams = {
-    model: creature.model,
-    messages: [
-      { role: "system", content: creature.systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-  };
-  if (!fixed && creature.temperature !== undefined) {
-    params.temperature = creature.temperature;
-  }
-  if (opts.maxOutputTokens !== undefined) {
-    if (fixed) params.max_completion_tokens = opts.maxOutputTokens;
-    else params.max_tokens = opts.maxOutputTokens;
-  }
-  return params;
-}
+const MOCK_RESPONSES: Record<string, string[]> = {
+  nightcrawler: [
+    "Here is a concise solution that addresses the core requirements. The approach is modular, testable, and handles edge cases gracefully. Each component has a single responsibility and communicates through well-defined interfaces.",
+    "The implementation leverages established patterns to ensure maintainability. Input validation occurs at system boundaries, internal logic trusts its invariants, and output is deterministic given the same inputs.",
+    "This solution prioritizes clarity over cleverness. The data flows in one direction, side effects are isolated, and the happy path is obvious at a glance.",
+  ],
+  bloodworm: [
+    "ATTACK SURFACE IDENTIFIED: The output assumes valid input without defensive checks. Edge cases near boundaries (empty input, max values, concurrent access) are unhandled. The solution would fail under adversarial conditions.",
+    "WEAKNESSES FOUND: No error handling for network failures. The approach breaks if the upstream contract changes. Missing validation on the response shape before consuming it.",
+  ],
+  silkworm: [
+    "Relevant facts extracted: (1) Task requires structured output. (2) Three files directly relevant — see attached context. (3) No conflicting constraints found in the codebase.",
+  ],
+  tapeworm: [
+    JSON.stringify({ passed: true, score: 0.87, critique: "The nightcrawler output is on-task and materially correct. It burrows through the key steps without unnecessary detours. Minor style nits but nothing that blocks a pass." }),
+    JSON.stringify({ passed: false, score: 0.31, critique: "Output does not satisfy the task constraints. The approach described would produce incorrect results for non-trivial inputs. Recommend fallback." }),
+  ],
+  earthworm: [
+    "After reviewing all candidate outputs and the adversarial critiques, the strongest path forward is a hybrid of candidates 1 and 3. The core algorithm from candidate 1 is sound; the error handling suggested by the bloodworm critique should be applied. Final synthesized answer: implement with explicit validation at entry points, pure transformation in the core, and structured error returns rather than thrown exceptions.",
+  ],
+  glowworm: [
+    "Casting compressed and routed. Signature verified. Payload integrity: OK.",
+  ],
+};
 
 export async function callCreature(
   creature: Creature,
-  userPrompt: string,
-  opts: CallOptions = {},
+  _userPrompt: string,
+  _opts: CallOptions = {},
 ): Promise<CreatureResponse> {
-  const client = getClient();
-  const sem = sharedSemaphore();
-  return sem.run(async () => {
-    const completion = await client.chat.completions.create(
-      buildBaseParams(creature, userPrompt, opts),
-      { signal: opts.signal },
-    );
-    const text = completion.choices[0]?.message?.content;
-    if (!text) {
-      throw new Error(
-        `Creature ${creature.kind} returned an empty response (model=${creature.model}).`,
-      );
-    }
-    const usage: TokenUsage = {
-      promptTokens: completion.usage?.prompt_tokens ?? 0,
-      completionTokens: completion.usage?.completion_tokens ?? 0,
-      totalTokens: completion.usage?.total_tokens ?? 0,
-      model: completion.model ?? creature.model,
-    };
-    return { text, usage };
-  });
+  await delay(MOCK_DELAY_MS + Math.random() * 300);
+  const pool = MOCK_RESPONSES[creature.kind] ?? ["Mock response."];
+  const text = pool[Math.floor(Math.random() * pool.length)];
+  return { text, usage: mockUsage(creature.model) };
 }
 
 export async function callCreatureStream(
   creature: Creature,
-  userPrompt: string,
+  _userPrompt: string,
   onChunk: (chunk: string) => void,
-  opts: CallOptions = {},
+  _opts: CallOptions = {},
 ): Promise<CreatureResponse> {
-  const client = getClient();
-  const sem = sharedSemaphore();
-  return sem.run(async () => {
-    const stream = await client.chat.completions.create(
-      {
-        ...buildBaseParams(creature, userPrompt, opts),
-        stream: true,
-        stream_options: { include_usage: true },
-      },
-      { signal: opts.signal },
-    );
-    let text = "";
-    let usage: TokenUsage = {
-      promptTokens: 0,
-      completionTokens: 0,
-      totalTokens: 0,
-      model: creature.model,
-    };
-    for await (const event of stream) {
-      const delta = event.choices?.[0]?.delta?.content;
-      if (typeof delta === "string" && delta.length > 0) {
-        text += delta;
-        onChunk(delta);
-      }
-      if (event.usage) {
-        usage = {
-          promptTokens: event.usage.prompt_tokens ?? 0,
-          completionTokens: event.usage.completion_tokens ?? 0,
-          totalTokens: event.usage.total_tokens ?? 0,
-          model: event.model ?? creature.model,
-        };
-      }
-    }
-    if (text.length === 0) {
-      throw new Error(
-        `Creature ${creature.kind} streamed an empty response (model=${creature.model}).`,
-      );
-    }
-    return { text, usage };
-  });
+  const pool = MOCK_RESPONSES[creature.kind] ?? ["Mock response."];
+  const text = pool[Math.floor(Math.random() * pool.length)];
+  const words = text.split(" ");
+  for (const word of words) {
+    await delay(40 + Math.random() * 40);
+    onChunk(word + " ");
+  }
+  return { text, usage: mockUsage(creature.model) };
 }

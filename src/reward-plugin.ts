@@ -14,7 +14,7 @@ export interface RewardPlugin {
 
 export async function loadRewardPlugin(warrenRoot: string): Promise<RewardPlugin> {
   for (const filename of ["reward.mjs", "reward.js"]) {
-    const candidate = join(warrenRoot, ".goblintown", filename);
+    const candidate = join(warrenRoot, ".wormhole", filename);
     try {
       await access(candidate, FS.F_OK);
     } catch {
